@@ -6,7 +6,7 @@ namespace KoninklijkeCollective\KoningGeo\Domain\Model;
  *
  * @package KoninklijkeCollective\KoningGeo\Domain\Model
  */
-class Location extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
+class Location
 {
     /**
      * @var int
@@ -46,12 +46,12 @@ class Location extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * @var float
      */
-    protected $viewportSeLatitude;
+    protected $viewportSwLatitude;
 
     /**
      * @var float
      */
-    protected $viewportSeLongitude;
+    protected $viewportSwLongitude;
 
     /**
      * @return int
@@ -175,34 +175,34 @@ class Location extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * @return float
      */
-    public function getViewportSeLatitude()
+    public function getViewportSwLatitude()
     {
-        return $this->viewportSeLatitude;
+        return $this->viewportSwLatitude;
     }
 
     /**
-     * @param float $viewportSeLatitude
+     * @param float $viewportSwLatitude
      * @return void
      */
-    public function setViewportSeLatitude($viewportSeLatitude)
+    public function setViewportSwLatitude($viewportSwLatitude)
     {
-        $this->viewportSeLatitude = $viewportSeLatitude;
+        $this->viewportSwLatitude = $viewportSwLatitude;
     }
 
     /**
      * @return float
      */
-    public function getViewportSeLongitude()
+    public function getViewportSwLongitude()
     {
-        return $this->viewportSeLongitude;
+        return $this->viewportSwLongitude;
     }
 
     /**
-     * @param float $viewportSeLongitude
+     * @param float $viewportSwLongitude
      * @return void
      */
-    public function setViewportSeLongitude($viewportSeLongitude)
+    public function setViewportSwLongitude($viewportSwLongitude)
     {
-        $this->viewportSeLongitude = $viewportSeLongitude;
+        $this->viewportSwLongitude = $viewportSwLongitude;
     }
 }

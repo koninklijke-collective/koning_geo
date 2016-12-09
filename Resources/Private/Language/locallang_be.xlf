@@ -9,6 +9,20 @@
             <trans-unit id="koninggeo_selector">
                 <source>Location selector</source>
             </trans-unit>
+
+            <trans-unit id="flash_message.error.header">
+                <source>Error</source>
+            </trans-unit>
+            <trans-unit id="flash_message.error.text">
+                <source>Could not retrieve location data from Google</source>
+            </trans-unit>
+
+            <trans-unit id="flash_message.success.header">
+                <source>Success</source>
+            </trans-unit>
+            <trans-unit id="flash_message.success.text">
+                <source>Successfully retrieved location data from Google</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

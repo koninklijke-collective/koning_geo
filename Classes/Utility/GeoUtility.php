@@ -1,12 +1,12 @@
 <?php
-namespace KoninklijkeCollective\KoningGeo\Service;
+namespace KoninklijkeCollective\KoningGeo\Utility;
 
 /**
- * Service: Geo
+ * Utility: Geo
  *
- * @package KoninklijkeCollective\KoningGeo\Service
+ * @package KoninklijkeCollective\KoningGeo\Utility
  */
-class GeoService
+class GeoUtility
 {
     /**
      * @param $location
@@ -21,6 +21,7 @@ class GeoService
 
         if (isset($response['results'][0])) {
             $geoData = $response['results'][0];
+
             return [
                 'location' => $geoData['formatted_address'],
                 'latitude' => $geoData['geometry']['location']['lat'],
@@ -37,15 +38,27 @@ class GeoService
     /**
      * @param int $uidForeign
      * @param string $tableName
-     * @return array|false|null
+     * @return \KoninklijkeCollective\KoningGeo\Domain\Model\Location
      */
     public static function getLocationData($uidForeign, $tableName)
     {
-        return self::getDatabaseConnection()->exec_SELECTgetSingleRow(
+        $row = self::getDatabaseConnection()->exec_SELECTgetSingleRow(
             '*',
             'tx_koninggeo_domain_model_location',
             'uid_foreign = ' . (int) $uidForeign . ' AND tablename = ' . self::getDatabaseConnection()->fullQuoteStr($tableName, 'tx_koninggeo_domain_model_location')
         );
+        if (is_array($row)) {
+            $location = new \KoninklijkeCollective\KoningGeo\Domain\Model\Location();
+            $location->setLocation($row['location']);
+            $location->setLatitude($row['latitude']);
+            $location->setLongitude($row['longitude']);
+            $location->setViewportNeLatitude($row['viewport_ne_latitude']);
+            $location->setViewportNeLongitude($row['viewport_ne_longitude']);
+            $location->setViewportSwLatitude($row['viewport_sw_latitude']);
+            $location->setViewportSwLongitude($row['viewport_sw_longitude']);
+            return $location;
+        }
+        return null;
     }
 
     /**

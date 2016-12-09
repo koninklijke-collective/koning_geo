@@ -43,29 +43,52 @@ class ProcessData
      */
     public function processDatamap_afterDatabaseOperations($status, $table, $id, $fieldArray, \TYPO3\CMS\Core\DataHandling\DataHandler $dataHandler)
     {
+        $message = null;
         if ($this->location !== null) {
             if ($status === 'new') {
                 $id = $dataHandler->substNEWwithIDs[$id];
             }
 
-            $this->getDatabaseConnection()->exec_DELETEquery(
-                'tx_koninggeo_domain_model_location',
-                'uid_foreign = ' . (int) $id . ' AND tablename = ' . $this->getDatabaseConnection()->fullQuoteStr($table, 'tx_koninggeo_domain_model_location')
-            );
-
-            $geoData = \KoninklijkeCollective\KoningGeo\Service\GeoService::getDataForLocation($this->location);
-            if ($geoData !== null) {
-                $fields = array_merge(
-                    [
-                        'uid_foreign' => $id,
-                        'tablename' => $table
-                    ],
-                    $geoData
-                );
-                $this->getDatabaseConnection()->exec_INSERTquery(
+            $location = \KoninklijkeCollective\KoningGeo\Utility\GeoUtility::getLocationData($id, $table);
+            if ($location === null || $location->getLocation() !== $this->location) {
+                $this->getDatabaseConnection()->exec_DELETEquery(
                     'tx_koninggeo_domain_model_location',
-                    $fields
+                    'uid_foreign = ' . (int)$id . ' AND tablename = ' . $this->getDatabaseConnection()->fullQuoteStr($table, 'tx_koninggeo_domain_model_location')
                 );
+
+                if (trim($this->location) !== '') {
+                    $geoData = \KoninklijkeCollective\KoningGeo\Utility\GeoUtility::getDataForLocation($this->location);
+                    if ($geoData !== null) {
+                        $fields = array_merge(
+                            [
+                                'uid_foreign' => $id,
+                                'tablename' => $table
+                            ],
+                            $geoData
+                        );
+                        $this->getDatabaseConnection()->exec_INSERTquery(
+                            'tx_koninggeo_domain_model_location',
+                            $fields
+                        );
+
+                        /** @var \TYPO3\CMS\Core\Messaging\FlashMessage $message */
+                        $message = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Messaging\FlashMessage::class,
+                            \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate('LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:flash_message.success.text', 'koning_geo'),
+                            \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate('LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:flash_message.success.header', 'koning_geo')
+                        );
+                    } else {
+                        /** @var \TYPO3\CMS\Core\Messaging\FlashMessage $message */
+                        $message = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Messaging\FlashMessage::class,
+                            \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate('LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:flash_message.error.text', 'koning_geo'),
+                            \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate('LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:flash_message.error.header', 'koning_geo'),
+                            \TYPO3\CMS\Core\Messaging\FlashMessage::ERROR
+                        );
+                    }
+
+                    /* @var $flashMessageService \TYPO3\CMS\Core\Messaging\FlashMessageService */
+                    $flashMessageService = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Messaging\FlashMessageService::class);
+                    $flashMessageService->getMessageQueueByIdentifier()->enqueue($message);
+                }
             }
         }
     }
