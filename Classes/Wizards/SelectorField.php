@@ -23,7 +23,7 @@ class SelectorField
             );
             if (is_array($location)) {
                 $value = htmlspecialchars($location['location']);
-                $coordinates = $location['latitude'] . ', ' . $location['latitude'];
+                $coordinates = $location['latitude'] . ', ' . $location['longitude'];
 
                 $params['item'] = str_replace('value=""', 'value="' . $value . '"', $params['item']);
                 $params['item'] = $params['item'] . $coordinates;
