@@ -1,5 +1,8 @@
 <?php
+
 namespace KoninklijkeCollective\KoningGeo\Utility;
+
+use KoninklijkeCollective\KoningGeo\Domain\Model\Location;
 
 /**
  * Utility: Geo
@@ -38,17 +41,18 @@ class GeoUtility
     /**
      * @param int $uidForeign
      * @param string $tableName
-     * @return \KoninklijkeCollective\KoningGeo\Domain\Model\Location
+     * @return Location
      */
     public static function getLocationData($uidForeign, $tableName)
     {
         $row = self::getDatabaseConnection()->exec_SELECTgetSingleRow(
             '*',
-            'tx_koninggeo_domain_model_location',
-            'uid_foreign = ' . (int) $uidForeign . ' AND tablename = ' . self::getDatabaseConnection()->fullQuoteStr($tableName, 'tx_koninggeo_domain_model_location')
+            Location::TABLE,
+            'uid_foreign = ' . (int)$uidForeign . ' AND tablename = ' . self::getDatabaseConnection()->fullQuoteStr($tableName,
+                Location::TABLE)
         );
         if (is_array($row)) {
-            $location = new \KoninklijkeCollective\KoningGeo\Domain\Model\Location();
+            $location = new Location();
             $location->setLocation($row['location']);
             $location->setLatitude($row['latitude']);
             $location->setLongitude($row['longitude']);

@@ -1,4 +1,5 @@
 <?php
+
 namespace KoninklijkeCollective\KoningGeo\Domain\Model;
 
 /**
@@ -8,6 +9,8 @@ namespace KoninklijkeCollective\KoningGeo\Domain\Model;
  */
 class Location
 {
+    const TABLE = 'tx_koninggeo_domain_model_location';
+
     /**
      * @var int
      */

@@ -1,5 +1,5 @@
 <?php
-call_user_func(function() {
+call_user_func(function () {
     if (\KoninklijkeCollective\KoningGeo\Utility\ConfigurationUtility::isValid()) {
         $tempColumns = [
             'koninggeo_selector' => [
@@ -22,7 +22,8 @@ call_user_func(function() {
         $tableList = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $configuration['tableList']);
         foreach ($tableList as $table) {
             \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns($table, $tempColumns);
-            \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes($table, '--div--;LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:tab.koning_geo, koninggeo_selector');
+            \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes($table,
+                '--div--;LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:tab.koning_geo, koninggeo_selector');
         }
     }
 });

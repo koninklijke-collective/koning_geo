@@ -1,5 +1,15 @@
 <?php
+
 namespace KoninklijkeCollective\KoningGeo\Hooks;
+
+use KoninklijkeCollective\KoningGeo\Domain\Model\Location;
+use KoninklijkeCollective\KoningGeo\Utility\ConfigurationUtility;
+use KoninklijkeCollective\KoningGeo\Utility\GeoUtility;
+use TYPO3\CMS\Core\DataHandling\DataHandler;
+use TYPO3\CMS\Core\Messaging\FlashMessage;
+use TYPO3\CMS\Core\Messaging\FlashMessageService;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
 /**
  * Hook: Process data
@@ -9,11 +19,13 @@ namespace KoninklijkeCollective\KoningGeo\Hooks;
 class ProcessData
 {
     const FIELD_NAME = 'koninggeo_selector';
+    const EXTENSION = 'koning_geo';
+    const LANGUAGE_FILE = 'LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf';
 
     /**
-     * @var string
+     * @var array
      */
-    protected $location = null;
+    protected $locationMapping = [];
 
     /**
      * Unset the field before save and save it in a class property (because the field doesn't exist in the database)
@@ -26,7 +38,7 @@ class ProcessData
     public function processDatamap_preProcessFieldArray(array &$incomingFieldArray, $table, $id)
     {
         if ($this->isInTableList($table) && isset($incomingFieldArray[self::FIELD_NAME])) {
-            $this->location = $incomingFieldArray[self::FIELD_NAME];
+            $this->locationMapping[$table][$id] = $incomingFieldArray[self::FIELD_NAME];
             unset($incomingFieldArray[self::FIELD_NAME]);
         }
     }
@@ -38,26 +50,31 @@ class ProcessData
      * @param string $table
      * @param int $id
      * @param array $fieldArray
-     * @param \TYPO3\CMS\Core\DataHandling\DataHandler $dataHandler
+     * @param DataHandler $dataHandler
      * @return void
      */
-    public function processDatamap_afterDatabaseOperations($status, $table, $id, $fieldArray, \TYPO3\CMS\Core\DataHandling\DataHandler $dataHandler)
+    public function processDatamap_afterDatabaseOperations($status, $table, $id, $fieldArray, DataHandler $dataHandler)
     {
         $message = null;
-        if ($this->location !== null) {
+        if (isset($this->locationMapping[$table][$id])) {
             if ($status === 'new') {
+                $locationForNewRecord = $this->locationMapping[$table][$id];
+                unset($this->locationMapping[$table][$id]);
+
                 $id = $dataHandler->substNEWwithIDs[$id];
+                $this->locationMapping[$table][$id] = $locationForNewRecord;
             }
 
-            $location = \KoninklijkeCollective\KoningGeo\Utility\GeoUtility::getLocationData($id, $table);
-            if ($location === null || $location->getLocation() !== $this->location) {
+            $location = GeoUtility::getLocationData($id, $table);
+            if ($location === null || $location->getLocation() !== $this->locationMapping[$table][$id]) {
                 $this->getDatabaseConnection()->exec_DELETEquery(
-                    'tx_koninggeo_domain_model_location',
-                    'uid_foreign = ' . (int)$id . ' AND tablename = ' . $this->getDatabaseConnection()->fullQuoteStr($table, 'tx_koninggeo_domain_model_location')
+                    Location::TABLE,
+                    'uid_foreign = ' . (int)$id . ' AND tablename = ' . $this->getDatabaseConnection()->fullQuoteStr($table,
+                        Location::TABLE)
                 );
 
-                if (trim($this->location) !== '') {
-                    $geoData = \KoninklijkeCollective\KoningGeo\Utility\GeoUtility::getDataForLocation($this->location);
+                if (trim($this->locationMapping[$table][$id]) !== '') {
+                    $geoData = GeoUtility::getDataForLocation($this->locationMapping[$table][$id]);
                     if ($geoData !== null) {
                         $fields = array_merge(
                             [
@@ -67,29 +84,34 @@ class ProcessData
                             $geoData
                         );
                         $this->getDatabaseConnection()->exec_INSERTquery(
-                            'tx_koninggeo_domain_model_location',
+                            Location::TABLE,
                             $fields
                         );
 
-                        /** @var \TYPO3\CMS\Core\Messaging\FlashMessage $message */
-                        $message = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Messaging\FlashMessage::class,
-                            \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate('LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:flash_message.success.text', 'koning_geo'),
-                            \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate('LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:flash_message.success.header', 'koning_geo')
+                        /** @var FlashMessage $message */
+                        $message = GeneralUtility::makeInstance(FlashMessage::class,
+                            LocalizationUtility::translate(self::LANGUAGE_FILE . ':flash_message.success.text',
+                                self::EXTENSION, [$this->locationMapping[$table][$id]]),
+                            LocalizationUtility::translate(self::LANGUAGE_FILE . ':flash_message.success.header',
+                                self::EXTENSION)
                         );
                     } else {
-                        /** @var \TYPO3\CMS\Core\Messaging\FlashMessage $message */
-                        $message = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Messaging\FlashMessage::class,
-                            \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate('LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:flash_message.error.text', 'koning_geo'),
-                            \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate('LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:flash_message.error.header', 'koning_geo'),
-                            \TYPO3\CMS\Core\Messaging\FlashMessage::ERROR
+                        /** @var FlashMessage $message */
+                        $message = GeneralUtility::makeInstance(FlashMessage::class,
+                            LocalizationUtility::translate(self::LANGUAGE_FILE . ':flash_message.error.text',
+                                self::EXTENSION, [$this->locationMapping[$table][$id]]),
+                            LocalizationUtility::translate(self::LANGUAGE_FILE . ':flash_message.error.header',
+                                self::EXTENSION),
+                            FlashMessage::ERROR
                         );
                     }
 
-                    /* @var $flashMessageService \TYPO3\CMS\Core\Messaging\FlashMessageService */
-                    $flashMessageService = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Messaging\FlashMessageService::class);
+                    /* @var $flashMessageService FlashMessageService */
+                    $flashMessageService = GeneralUtility::makeInstance(FlashMessageService::class);
                     $flashMessageService->getMessageQueueByIdentifier()->enqueue($message);
                 }
             }
+            unset($this->locationMapping[$table][$id]);
         }
     }
 
@@ -102,39 +124,40 @@ class ProcessData
      * @param string $table
      * @param int $id
      * @param string $value
-     * @param \TYPO3\CMS\Core\DataHandling\DataHandler $dataHandler
+     * @param DataHandler $dataHandler
      * @return void
      */
-    public function processCmdmap_postProcess($command, $table, $id, $value, \TYPO3\CMS\Core\DataHandling\DataHandler $dataHandler) {
-        if ($this->isInTableList($table)) {
-            switch ($command) {
-                case 'delete':
-                    $this->getDatabaseConnection()->exec_DELETEquery(
-                        'tx_koninggeo_domain_model_location',
-                        'uid_foreign = ' . (int) $id . ' AND tablename = ' . $this->getDatabaseConnection()->fullQuoteStr($table, 'tx_koninggeo_domain_model_location')
-                    );
-                    break;
-                case 'copy':
-                    $configuration = \KoninklijkeCollective\KoningGeo\Utility\ConfigurationUtility::getConfiguration();
-                    foreach (\TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $configuration['tableList']) as $table) {
-                        if ($dataHandler->copyMappingArray[$table]) {
-                            foreach ($dataHandler->copyMappingArray[$table] as $oldId => $newId) {
-                                $existingRecord = $this->getDatabaseConnection()->exec_SELECTgetSingleRow(
-                                    '*',
-                                    'tx_koninggeo_domain_model_location',
-                                    'uid_foreign = ' . (int) $oldId . ' AND tablename = ' . $this->getDatabaseConnection()->fullQuoteStr($table, 'tx_koninggeo_domain_model_location')
+    public function processCmdmap_postProcess($command, $table, $id, $value, DataHandler $dataHandler)
+    {
+        switch ($command) {
+            case 'delete':
+                $this->getDatabaseConnection()->exec_DELETEquery(
+                    Location::TABLE,
+                    'uid_foreign = ' . (int)$id . ' AND tablename = ' . $this->getDatabaseConnection()->fullQuoteStr($table,
+                        Location::TABLE)
+                );
+                break;
+            case 'copy':
+                $configuration = ConfigurationUtility::getConfiguration();
+                foreach (GeneralUtility::trimExplode(',', $configuration['tableList']) as $table) {
+                    if ($dataHandler->copyMappingArray[$table]) {
+                        foreach ($dataHandler->copyMappingArray[$table] as $oldId => $newId) {
+                            $existingRecord = $this->getDatabaseConnection()->exec_SELECTgetSingleRow(
+                                '*',
+                                Location::TABLE,
+                                'uid_foreign = ' . (int)$oldId . ' AND tablename = ' . $this->getDatabaseConnection()->fullQuoteStr($table,
+                                    Location::TABLE)
+                            );
+                            if (is_array($existingRecord)) {
+                                $existingRecord['uid_foreign'] = $newId;
+                                $this->getDatabaseConnection()->exec_INSERTquery(
+                                    Location::TABLE,
+                                    $existingRecord
                                 );
-                                if (is_array($existingRecord)) {
-                                    $existingRecord['uid_foreign'] = $newId;
-                                    $this->getDatabaseConnection()->exec_INSERTquery(
-                                        'tx_koninggeo_domain_model_location',
-                                        $existingRecord
-                                    );
-                                }
                             }
                         }
                     }
-            }
+                }
         }
     }
 
@@ -144,9 +167,9 @@ class ProcessData
      */
     protected function isInTableList($table)
     {
-        if (\KoninklijkeCollective\KoningGeo\Utility\ConfigurationUtility::isValid()) {
-            $configuration = \KoninklijkeCollective\KoningGeo\Utility\ConfigurationUtility::getConfiguration();
-            $tableList = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $configuration['tableList']);
+        if (ConfigurationUtility::isValid()) {
+            $configuration = ConfigurationUtility::getConfiguration();
+            $tableList = GeneralUtility::trimExplode(',', $configuration['tableList']);
             return in_array($table, $tableList);
         }
         return false;
