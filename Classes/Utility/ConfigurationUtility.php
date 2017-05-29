@@ -9,6 +9,8 @@ namespace KoninklijkeCollective\KoningGeo\Utility;
  */
 class ConfigurationUtility
 {
+    const EXTENSION = 'koning_geo';
+
     /**
      * @return boolean
      */

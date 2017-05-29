@@ -19,8 +19,6 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 class ProcessData
 {
     const FIELD_NAME = 'koninggeo_selector';
-    const EXTENSION = 'koning_geo';
-    const LANGUAGE_FILE = 'LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf';
 
     /**
      * @var array
@@ -90,18 +88,18 @@ class ProcessData
 
                         /** @var FlashMessage $message */
                         $message = GeneralUtility::makeInstance(FlashMessage::class,
-                            LocalizationUtility::translate(self::LANGUAGE_FILE . ':flash_message.success.text',
-                                self::EXTENSION, [$this->locationMapping[$table][$id]]),
-                            LocalizationUtility::translate(self::LANGUAGE_FILE . ':flash_message.success.header',
-                                self::EXTENSION)
+                            LocalizationUtility::translate('LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:flash_message.success.text',
+                                ConfigurationUtility::EXTENSION, [$this->locationMapping[$table][$id]]),
+                            LocalizationUtility::translate('LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:flash_message.success.header',
+                                ConfigurationUtility::EXTENSION)
                         );
                     } else {
                         /** @var FlashMessage $message */
                         $message = GeneralUtility::makeInstance(FlashMessage::class,
-                            LocalizationUtility::translate(self::LANGUAGE_FILE . ':flash_message.error.text',
-                                self::EXTENSION, [$this->locationMapping[$table][$id]]),
-                            LocalizationUtility::translate(self::LANGUAGE_FILE . ':flash_message.error.header',
-                                self::EXTENSION),
+                            LocalizationUtility::translate('LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:flash_message.error.text',
+                                ConfigurationUtility::EXTENSION, [$this->locationMapping[$table][$id]]),
+                            LocalizationUtility::translate('LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:flash_message.error.header',
+                                ConfigurationUtility::EXTENSION),
                             FlashMessage::ERROR
                         );
                     }
