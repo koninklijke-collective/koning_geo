@@ -1,4 +1,5 @@
 <?php
+
 namespace KoninklijkeCollective\KoningGeo\Utility;
 
 /**
@@ -8,6 +9,8 @@ namespace KoninklijkeCollective\KoningGeo\Utility;
  */
 class ConfigurationUtility
 {
+    const EXTENSION = 'koning_geo';
+
     /**
      * @return boolean
      */
@@ -29,7 +32,7 @@ class ConfigurationUtility
         if ($configuration === null) {
             $data = $GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['koning_geo'];
             if (!is_array($data)) {
-                $configuration = (array) unserialize($data);
+                $configuration = (array)unserialize($data);
             } else {
                 $configuration = $data;
             }
