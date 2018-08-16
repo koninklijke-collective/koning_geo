@@ -3,7 +3,7 @@ $EM_CONF[$_EXTKEY] = [
     'title' => 'Koning: Geo',
     'description' => 'Utility to retrieve and save geo data',
     'category' => 'misc',
-    'version' => '1.0.2',
+    'version' => '2.0.0',
     'state' => 'stable',
     'clearCacheOnLoad' => true,
     'author' => 'Jesper Paardekooper',
@@ -11,7 +11,7 @@ $EM_CONF[$_EXTKEY] = [
     'author_company' => 'Koninklijke Collective',
     'constraints' => [
         'depends' => [
-            'typo3' => '6.2.0-8.99.99',
+            'typo3' => '8.7.0-8.99.99',
         ],
         'conflicts' => [],
         'suggests' => [],
