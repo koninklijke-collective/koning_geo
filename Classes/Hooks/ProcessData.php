@@ -3,6 +3,8 @@
 namespace KoninklijkeCollective\KoningGeo\Hooks;
 
 use KoninklijkeCollective\KoningGeo\Domain\Model\Location;
+use KoninklijkeCollective\KoningGeo\Exception\AbstractException;
+use KoninklijkeCollective\KoningGeo\Service\LocationService;
 use KoninklijkeCollective\KoningGeo\Utility\ConfigurationUtility;
 use KoninklijkeCollective\KoningGeo\Utility\GeoUtility;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
@@ -50,6 +52,7 @@ class ProcessData
      * @param array $fieldArray
      * @param DataHandler $dataHandler
      * @return void
+     * @throws \TYPO3\CMS\Core\Exception
      */
     public function processDatamap_afterDatabaseOperations($status, $table, $id, $fieldArray, DataHandler $dataHandler)
     {
@@ -65,41 +68,42 @@ class ProcessData
 
             $location = GeoUtility::getLocationData($id, $table);
             if ($location === null || $location->getLocation() !== $this->locationMapping[$table][$id]) {
-                $this->getDatabaseConnection()->exec_DELETEquery(
-                    Location::TABLE,
-                    'uid_foreign = ' . (int)$id . ' AND tablename = ' . $this->getDatabaseConnection()->fullQuoteStr($table,
-                        Location::TABLE)
-                );
+                $this->getLocationService()->delete($id, $table);
 
                 if (trim($this->locationMapping[$table][$id]) !== '') {
                     $geoData = GeoUtility::getDataForLocation($this->locationMapping[$table][$id]);
                     if ($geoData !== null) {
-                        $fields = array_merge(
-                            [
-                                'uid_foreign' => $id,
-                                'tablename' => $table
-                            ],
-                            $geoData
-                        );
-                        $this->getDatabaseConnection()->exec_INSERTquery(
-                            Location::TABLE,
-                            $fields
-                        );
-
-                        /** @var FlashMessage $message */
-                        $message = GeneralUtility::makeInstance(FlashMessage::class,
-                            LocalizationUtility::translate('LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:flash_message.success.text',
-                                ConfigurationUtility::EXTENSION, [$this->locationMapping[$table][$id]]),
-                            LocalizationUtility::translate('LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:flash_message.success.header',
-                                ConfigurationUtility::EXTENSION)
-                        );
+                        $location = Location::create($geoData)
+                            ->setUidForeign($id)
+                            ->setTablename($table);
+                        if ($this->getLocationService()->create($location)) {
+                            /** @var FlashMessage $message */
+                            $message = GeneralUtility::makeInstance(
+                                FlashMessage::class,
+                                LocalizationUtility::translate(
+                                    'LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:flash_message.success.text',
+                                    ConfigurationUtility::EXTENSION,
+                                    [$this->locationMapping[$table][$id]]
+                                ),
+                                LocalizationUtility::translate(
+                                    'LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:flash_message.success.header',
+                                    ConfigurationUtility::EXTENSION
+                                )
+                            );
+                        }
                     } else {
                         /** @var FlashMessage $message */
-                        $message = GeneralUtility::makeInstance(FlashMessage::class,
-                            LocalizationUtility::translate('LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:flash_message.error.text',
-                                ConfigurationUtility::EXTENSION, [$this->locationMapping[$table][$id]]),
-                            LocalizationUtility::translate('LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:flash_message.error.header',
-                                ConfigurationUtility::EXTENSION),
+                        $message = GeneralUtility::makeInstance(
+                            FlashMessage::class,
+                            LocalizationUtility::translate(
+                                'LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:flash_message.error.text',
+                                ConfigurationUtility::EXTENSION,
+                                [$this->locationMapping[$table][$id]]
+                            ),
+                            LocalizationUtility::translate(
+                                'LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:flash_message.error.header',
+                                ConfigurationUtility::EXTENSION
+                            ),
                             FlashMessage::ERROR
                         );
                     }
@@ -115,7 +119,6 @@ class ProcessData
 
     /**
      * Remove location record when a record is removed
-     *
      * Copy location record when a record is copied
      *
      * @param string $command
@@ -129,29 +132,19 @@ class ProcessData
     {
         switch ($command) {
             case 'delete':
-                $this->getDatabaseConnection()->exec_DELETEquery(
-                    Location::TABLE,
-                    'uid_foreign = ' . (int)$id . ' AND tablename = ' . $this->getDatabaseConnection()->fullQuoteStr($table,
-                        Location::TABLE)
-                );
+                $this->getLocationService()->delete($id, $table);
                 break;
             case 'copy':
                 $configuration = ConfigurationUtility::getConfiguration();
-                foreach (GeneralUtility::trimExplode(',', $configuration['tableList']) as $table) {
-                    if ($dataHandler->copyMappingArray[$table]) {
-                        foreach ($dataHandler->copyMappingArray[$table] as $oldId => $newId) {
-                            $existingRecord = $this->getDatabaseConnection()->exec_SELECTgetSingleRow(
-                                '*',
-                                Location::TABLE,
-                                'uid_foreign = ' . (int)$oldId . ' AND tablename = ' . $this->getDatabaseConnection()->fullQuoteStr($table,
-                                    Location::TABLE)
-                            );
-                            if (is_array($existingRecord)) {
-                                $existingRecord['uid_foreign'] = $newId;
-                                $this->getDatabaseConnection()->exec_INSERTquery(
-                                    Location::TABLE,
-                                    $existingRecord
-                                );
+                foreach (GeneralUtility::trimExplode(',', $configuration['tableList'], true) as $target) {
+                    if ($dataHandler->copyMappingArray[$target]) {
+                        foreach ($dataHandler->copyMappingArray[$target] as $oldId => $newId) {
+                            try {
+                                $location = $this->getLocationService()->get($oldId, $target);
+                                $location->setUidForeign($newId);
+                                $this->getLocationService()->create($location);
+                            } catch (AbstractException $e) {
+                                // Do nothing..
                             }
                         }
                     }
@@ -163,21 +156,20 @@ class ProcessData
      * @param string $table
      * @return boolean
      */
-    protected function isInTableList($table)
+    protected function isInTableList($table): bool
     {
         if (ConfigurationUtility::isValid()) {
             $configuration = ConfigurationUtility::getConfiguration();
-            $tableList = GeneralUtility::trimExplode(',', $configuration['tableList']);
-            return in_array($table, $tableList);
+            return GeneralUtility::inList($configuration['tableList'], $table);
         }
         return false;
     }
 
     /**
-     * @return \TYPO3\CMS\Core\Database\DatabaseConnection
+     * @return LocationService
      */
-    protected function getDatabaseConnection()
+    protected function getLocationService(): LocationService
     {
-        return $GLOBALS['TYPO3_DB'];
+        return GeneralUtility::makeInstance(LocationService::class);
     }
 }

@@ -57,6 +57,42 @@ class Location
     protected $viewportSwLongitude;
 
     /**
+     * @param array $row
+     * @return static
+     */
+    public static function create(array $row = []): Location
+    {
+        $object = new static();
+        foreach ($row as $column => $value) {
+            $methodName = 'set' . \TYPO3\CMS\Core\Utility\GeneralUtility::underscoredToUpperCamelCase($column);
+            if (method_exists($object, $methodName)) {
+                $object->{$methodName}($value);
+            }
+        }
+        return $object;
+    }
+
+    /**
+     * Return database values for insert
+     *
+     * @return array
+     */
+    public function values(): array
+    {
+        return [
+            'uid_foreign' => $this->getUidForeign(),
+            'tablename' => $this->getTablename(),
+            'location' => $this->getLocation(),
+            'latitude' => $this->getLatitude(),
+            'longitude' => $this->getLongitude(),
+            'viewport_ne_latitude' => $this->getViewportNeLatitude(),
+            'viewport_ne_longitude' => $this->getViewportNeLongitude(),
+            'viewport_sw_latitude' => $this->getViewportSwLatitude(),
+            'viewport_sw_longitude' => $this->getViewportSwLongitude(),
+        ];
+    }
+
+    /**
      * @return int
      */
     public function getUidForeign()
@@ -66,11 +102,12 @@ class Location
 
     /**
      * @param int $uidForeign
-     * @return void
+     * @return Location
      */
     public function setUidForeign($uidForeign)
     {
         $this->uidForeign = $uidForeign;
+        return $this;
     }
 
     /**
@@ -83,11 +120,12 @@ class Location
 
     /**
      * @param string $tablename
-     * @return void
+     * @return Location
      */
     public function setTablename($tablename)
     {
         $this->tablename = $tablename;
+        return $this;
     }
 
     /**
@@ -100,11 +138,12 @@ class Location
 
     /**
      * @param string $location
-     * @return void
+     * @return Location
      */
     public function setLocation($location)
     {
         $this->location = $location;
+        return $this;
     }
 
     /**
@@ -117,11 +156,12 @@ class Location
 
     /**
      * @param float $latitude
-     * @return void
+     * @return Location
      */
     public function setLatitude($latitude)
     {
         $this->latitude = $latitude;
+        return $this;
     }
 
     /**
@@ -134,11 +174,12 @@ class Location
 
     /**
      * @param float $longitude
-     * @return void
+     * @return Location
      */
     public function setLongitude($longitude)
     {
         $this->longitude = $longitude;
+        return $this;
     }
 
     /**
@@ -151,11 +192,12 @@ class Location
 
     /**
      * @param float $viewportNeLatitude
-     * @return void
+     * @return Location
      */
     public function setViewportNeLatitude($viewportNeLatitude)
     {
         $this->viewportNeLatitude = $viewportNeLatitude;
+        return $this;
     }
 
     /**
@@ -168,11 +210,12 @@ class Location
 
     /**
      * @param float $viewportNeLongitude
-     * @return void
+     * @return Location
      */
     public function setViewportNeLongitude($viewportNeLongitude)
     {
         $this->viewportNeLongitude = $viewportNeLongitude;
+        return $this;
     }
 
     /**
@@ -185,11 +228,12 @@ class Location
 
     /**
      * @param float $viewportSwLatitude
-     * @return void
+     * @return Location
      */
     public function setViewportSwLatitude($viewportSwLatitude)
     {
         $this->viewportSwLatitude = $viewportSwLatitude;
+        return $this;
     }
 
     /**
@@ -202,10 +246,11 @@ class Location
 
     /**
      * @param float $viewportSwLongitude
-     * @return void
+     * @return Location
      */
     public function setViewportSwLongitude($viewportSwLongitude)
     {
         $this->viewportSwLongitude = $viewportSwLongitude;
+        return $this;
     }
 }

@@ -7,8 +7,8 @@ call_user_func(function () {
                 'label' => 'LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:koninggeo_selector',
                 'config' => [
                     'type' => 'selectorKoningGeo',
-                ]
-            ]
+                ],
+            ],
         ];
 
         $configuration = \KoninklijkeCollective\KoningGeo\Utility\ConfigurationUtility::getConfiguration();
@@ -17,8 +17,10 @@ call_user_func(function () {
         foreach ($tableList as $table) {
             if (isset($GLOBALS['TCA'][$table])) {
                 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns($table, $tempColumns);
-                \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes($table,
-                    '--div--;LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:tab.koning_geo, koninggeo_selector');
+                \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes(
+                    $table,
+                    '--div--;LLL:EXT:koning_geo/Resources/Private/Language/locallang_be.xlf:tab.koning_geo, koninggeo_selector'
+                );
             }
         }
     }
