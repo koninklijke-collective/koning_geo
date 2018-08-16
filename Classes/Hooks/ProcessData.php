@@ -66,7 +66,11 @@ class ProcessData
                 $this->locationMapping[$table][$id] = $locationForNewRecord;
             }
 
-            $location = GeoUtility::getLocationData($id, $table);
+            try {
+                $location = $this->getLocationService()->get($id, $table);
+            } catch (AbstractException $e) {
+                $location = null;
+            }
             if ($location === null || $location->getLocation() !== $this->locationMapping[$table][$id]) {
                 $this->getLocationService()->delete($id, $table);
 
