@@ -14,9 +14,10 @@
 
     "autoload": {
         "psr-4": {
-            "Keizer\\KoningGeo\\": "Classes/"
+            "KoninklijkeCollective\\KoningGeo\\": "Classes/"
         }
     },
+
     "authors": [
         {
             "name": "Jesper Paardekooper",

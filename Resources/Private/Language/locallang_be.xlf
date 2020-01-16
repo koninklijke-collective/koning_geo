@@ -6,22 +6,8 @@
             <trans-unit id="tab.koning_geo">
                 <source>Location data</source>
             </trans-unit>
-            <trans-unit id="koninggeo_selector">
-                <source>Location selector</source>
-            </trans-unit>
-
-            <trans-unit id="flash_message.error.header">
-                <source>Error</source>
-            </trans-unit>
-            <trans-unit id="flash_message.error.text">
-                <source>Could not retrieve location data from Google for location: %s</source>
-            </trans-unit>
-
-            <trans-unit id="flash_message.success.header">
-                <source>Success</source>
-            </trans-unit>
-            <trans-unit id="flash_message.success.text">
-                <source>Successfully retrieved location data from Google for location: %s</source>
+            <trans-unit id="koning_geo_address_finder">
+                <source>Address Finder</source>
             </trans-unit>
         </body>
     </file>

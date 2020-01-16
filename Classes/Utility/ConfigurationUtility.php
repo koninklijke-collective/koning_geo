@@ -2,41 +2,52 @@
 
 namespace KoninklijkeCollective\KoningGeo\Utility;
 
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 /**
  * Utility: Geo configuration
- *
- * @package Keizer\KoningGeo\Utility
  */
 class ConfigurationUtility
 {
-    const EXTENSION = 'koning_geo';
+    public const EXTENSION = 'koning_geo';
+
+    /** @var array */
+    public static $configuration;
 
     /**
-     * @return boolean
+     * @return array
      */
-    public static function isValid()
+    public static function tableList(): array
     {
-        $configuration = static::getConfiguration();
-        return (is_array($configuration)
-            && !empty($configuration['tableList'])
-            && !empty($configuration['googleMapsApiKey'])
-        );
+        $tableList = static::getConfiguration()['tableList'] ?? '';
+
+        return GeneralUtility::trimExplode(',', $tableList, true);
+    }
+
+    /**
+     * @return string|null
+     */
+    public static function googleApiKey(): ?string
+    {
+        return static::getConfiguration()['googleApiKey'] ?? null;
     }
 
     /**
      * @return array
      */
-    public static function getConfiguration()
+    public static function getConfiguration(): ?array
     {
-        static $configuration;
-        if ($configuration === null) {
-            $data = $GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['koning_geo'];
+        if (static::$configuration === null) {
+            $data = $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS'][self::EXTENSION]
+                ?? $GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][self::EXTENSION]
+                ?? null;
             if (!is_array($data)) {
-                $configuration = (array)unserialize($data);
+                static::$configuration = unserialize($data) ?: [];
             } else {
-                $configuration = $data;
+                static::$configuration = $data;
             }
         }
-        return $configuration;
+
+        return static::$configuration;
     }
 }
