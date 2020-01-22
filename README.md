@@ -12,7 +12,7 @@ Install the extension. Configure ``$GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']
 Every table that you enabled this functionality for will have a ``Location data`` tab in the backend. Fill in the name of the location as precise as possible (address, city, country). When found, the geo coordinates will be saved into the ``tx_koninggeo_domain_model_location`` table.
 
 # Usage in code
-Use the ``KoninklijkeCollective\KoningGeo\Utility::getLocationData($uidForeign, $tableName)`` method to retrieve location data.
+Use the ``LocationRepository`` to retrieve configured data per record.
 
 # To do
 Make extension work for custom tables.
