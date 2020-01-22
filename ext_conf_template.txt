@@ -1,4 +1,4 @@
 # cat=basic; type=string; label=Enable geo codes for these tables (comma separated)
 tableList = pages
 # cat=basic; type=string; label=Google API key
-googleApiKey =
+googleMapsApiKey =

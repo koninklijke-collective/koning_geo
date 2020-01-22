@@ -39,7 +39,7 @@ class GeocodeService
      */
     protected function url(array $parameters = []): string
     {
-        $parameters['key'] = ConfigurationUtility::googleApiKey();
+        $parameters['key'] = ConfigurationUtility::googleMapsApiKey();
 
         return self::GOOGLE_MAPS_GEOCODE_API . '?' . http_build_query($parameters);
     }

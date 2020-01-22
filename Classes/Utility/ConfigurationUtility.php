@@ -27,9 +27,9 @@ class ConfigurationUtility
     /**
      * @return string|null
      */
-    public static function googleApiKey(): ?string
+    public static function googleMapsApiKey(): ?string
     {
-        return static::getConfiguration()['googleApiKey'] ?? null;
+        return static::getConfiguration()['googleMapsApiKey'] ?? null;
     }
 
     /**
