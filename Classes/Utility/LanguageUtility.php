@@ -15,9 +15,9 @@ class LanguageUtility
     public static function translate(string $key, array $parameters = [], $default = null): ?string
     {
         return LocalizationUtility::translate(
-                $key,
-                ConfigurationUtility::EXTENSION,
-                $parameters
-            ) ?? $default;
+            $key,
+            ConfigurationUtility::EXTENSION,
+            $parameters
+        ) ?? $default;
     }
 }

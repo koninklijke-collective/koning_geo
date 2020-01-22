@@ -6,7 +6,6 @@ use KoninklijkeCollective\KoningGeo\Domain\Model\Location;
 use KoninklijkeCollective\KoningGeo\Domain\Repository\LocationRepository;
 use KoninklijkeCollective\KoningGeo\Exception\ExtensionException;
 use KoninklijkeCollective\KoningGeo\Utility\ConfigurationUtility;
-use KoninklijkeCollective\KoningGeo\Utility\GeoUtility;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 

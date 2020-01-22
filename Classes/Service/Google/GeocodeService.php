@@ -21,12 +21,22 @@ class GeocodeService
         return $response['results'] ?? [];
     }
 
+    /**
+     * @param  string  $placeId
+     * @return array|null
+     */
     protected function get(string $placeId): ?array
     {
         $data = GeneralUtility::getUrl($this->url(['place_id' => $placeId]));
         $response = json_decode($data, true);
+
+        return $response['results'][0] ?? [];
     }
 
+    /**
+     * @param  array  $parameters
+     * @return string
+     */
     protected function url(array $parameters = []): string
     {
         $parameters['key'] = ConfigurationUtility::googleApiKey();
