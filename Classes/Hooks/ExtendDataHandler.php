@@ -24,11 +24,11 @@ class ExtendDataHandler
      *
      * @param  array  $incomingFieldArray
      * @param  string  $table
-     * @param  int  $id
+     * @param  int|string  $id  NEW<hash> or id of record
      * @return void
      */
     // phpcs:ignore PSR1.Methods.CamelCapsMethodName.NotCamelCaps
-    public function processDatamap_preProcessFieldArray(array &$incomingFieldArray, string $table, int $id): void
+    public function processDatamap_preProcessFieldArray(array &$incomingFieldArray, string $table, $id): void
     {
         if (isset($incomingFieldArray[self::FIELD_NAME]) && $this->isInTableList($table)) {
             $this->locationMapping[$table][$id] = json_decode($incomingFieldArray[self::FIELD_NAME], true);
@@ -41,7 +41,7 @@ class ExtendDataHandler
      *
      * @param  string  $status
      * @param  string  $table
-     * @param  int  $id
+     * @param  int|string  $id  NEW<hash> or id of record
      * @param  array  $fieldArray
      * @param  \TYPO3\CMS\Core\DataHandling\DataHandler  $dataHandler
      * @return void
@@ -51,7 +51,7 @@ class ExtendDataHandler
     public function processDatamap_afterDatabaseOperations(
         string $status,
         string $table,
-        int $id,
+        $id,
         array $fieldArray,
         DataHandler $dataHandler
     ): void {
