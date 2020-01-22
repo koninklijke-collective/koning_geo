@@ -18,6 +18,10 @@
         }
     },
 
+    "require": {
+        "typo3/cms-core": ">=9.5.0 <10.0.0"
+    },
+
     "authors": [
         {
             "name": "Jesper Paardekooper",
