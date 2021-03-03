@@ -11,6 +11,11 @@
     ],
     "homepage": "https://github.com/koninklijke-collective/koning_geo",
     "license": "LGPL-3.0+",
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "koning_geo"
+        }
+    },
 
     "autoload": {
         "psr-4": {
